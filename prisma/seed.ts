@@ -1,15 +1,15 @@
 import { PrismaClient, Role } from "@prisma/client";
 import { hash } from "bcryptjs";
 
-const prisma = new PrismaClient();
+import { DEV_ADMIN_EMAIL, DEV_ADMIN_PASSWORD } from "./seed-data";
 
-const DEV_ADMIN_PASSWORD = "admin123";
+const prisma = new PrismaClient();
 
 async function main() {
   const passwordHash = await hash(DEV_ADMIN_PASSWORD, 12);
 
-  await prisma.user.upsert({
-    where: { email: "admin@karmaarcs.dev" },
+  const admin = await prisma.user.upsert({
+    where: { email: DEV_ADMIN_EMAIL },
     update: {
       name: "Admin User",
       passwordHash,
@@ -17,13 +17,15 @@ async function main() {
       isActive: true,
     },
     create: {
-      email: "admin@karmaarcs.dev",
+      email: DEV_ADMIN_EMAIL,
       name: "Admin User",
       passwordHash,
       role: Role.ADMIN,
       isActive: true,
     },
   });
+
+  console.log(`Seeded admin user: ${admin.email} (${admin.role})`);
 }
 
 main()
@@ -31,7 +33,7 @@ main()
     await prisma.$disconnect();
   })
   .catch(async (error) => {
-    console.error(error);
+    console.error("Seed failed:", error);
     await prisma.$disconnect();
     process.exit(1);
   });
