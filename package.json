@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma migrate deploy && prisma generate && next build",
+    "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint",
     "db:generate": "prisma generate",
@@ -12,7 +13,9 @@
     "db:push": "prisma db push",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
-    "verify:auth": "tsx scripts/verify-login.ts"
+    "verify:auth": "tsx scripts/verify-login.ts",
+    "db:seed:remote": "bash scripts/seed-staging.sh",
+    "deploy:staging": "vercel deploy"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",

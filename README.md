@@ -73,18 +73,84 @@ npm run verify:auth
 
 This checks that the seeded admin user exists and that login/session works.
 
+## Staging deployment (Vercel + Neon)
+
+The app is configured for deployment to **Vercel** with a **Neon** PostgreSQL database.
+
+### 1. Create Neon database
+
+1. Create a project at [https://neon.tech](https://neon.tech)
+2. Create a database named `karma_arcs`
+3. Copy the pooled connection string (PostgreSQL)
+
+### 2. Push code to GitHub
+
+```bash
+git remote add origin <your-github-repo-url>
+git push -u origin cursor/phase-0-foundation-7702
+```
+
+### 3. Deploy to Vercel
+
+1. Import the GitHub repository at [https://vercel.com/new](https://vercel.com/new)
+2. Framework preset: **Next.js**
+3. Set environment variables:
+
+| Variable | Value |
+|----------|-------|
+| `DATABASE_URL` | Neon pooled connection string |
+| `AUTH_SECRET` | Output of `openssl rand -base64 32` |
+| `AUTH_TRUST_HOST` | `true` |
+| `NEXT_PUBLIC_APP_NAME` | `Karma Arcs` |
+
+4. Deploy the project
+
+The build runs `prisma migrate deploy` automatically before `next build`.
+
+### 4. Seed staging admin user
+
+After the first deploy, seed the staging database from your machine:
+
+```bash
+DATABASE_URL="your-neon-connection-string" npm run db:seed:remote
+```
+
+### 5. Verify staging login
+
+```bash
+AUTH_URL="https://your-app.vercel.app" npm run verify:auth
+```
+
+Then open `https://your-app.vercel.app/login` and sign in with:
+
+- Email: `admin@karmaarcs.dev`
+- Password: `admin123`
+
+### Vercel CLI (optional)
+
+```bash
+npx vercel login
+npx vercel link
+npx vercel env add DATABASE_URL
+npx vercel env add AUTH_SECRET
+npx vercel env add AUTH_TRUST_HOST
+npm run deploy:staging
+```
+
 ## Scripts
 
 | Command | Description |
 |---------|-------------|
 | `npm run dev` | Start Next.js dev server |
-| `npm run build` | Generate Prisma client and build for production |
+| `npm run build` | Run migrations, generate Prisma client, and build |
 | `npm run start` | Start production server |
 | `npm run lint` | Run ESLint |
-| `npm run db:migrate` | Apply Prisma migrations |
+| `npm run db:migrate` | Apply Prisma migrations (local dev) |
 | `npm run db:seed` | Seed development data |
+| `npm run db:seed:remote` | Migrate + seed a remote/staging database |
 | `npm run db:studio` | Open Prisma Studio |
 | `npm run verify:auth` | Verify admin seed and login flow |
+| `npm run deploy:staging` | Deploy preview via Vercel CLI |
 
 ## Tech stack
 
@@ -119,10 +185,9 @@ Completed:
 - Auth.js login/logout
 - Protected dashboard stub
 - Admin seed and verification script
+- README and deployment configuration (Vercel + Neon)
 
-Next (Sprint 1 task 1.9):
-
-- Staging deployment
+Sprint 1 exit criteria met locally. Connect GitHub + Neon + Vercel to publish staging.
 
 ## License
 
