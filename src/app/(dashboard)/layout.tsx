@@ -1,29 +1,26 @@
+import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { SignOutButton } from "@/components/auth/sign-out-button";
+import { Sidebar } from "@/components/layout/Sidebar";
+import { Header } from "@/components/layout/Header";
+import type { Role } from "@/types";
 
 export default async function DashboardLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   const session = await auth();
+  if (!session?.user) redirect("/login");
+
+  const role = session.user.role as Role;
 
   return (
-    <div className="flex min-h-full flex-1 flex-col bg-background">
-      <header className="border-b">
-        <div className="mx-auto flex h-16 w-full max-w-5xl items-center justify-between px-6">
-          <div>
-            <p className="text-sm font-medium">Karma Arcs</p>
-            <p className="text-xs text-muted-foreground">
-              {session?.user?.email}
-            </p>
-          </div>
-          <SignOutButton />
-        </div>
-      </header>
-      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col p-6">
-        {children}
-      </main>
+    <div className="flex h-screen overflow-hidden">
+      <Sidebar role={role} />
+      <div className="flex flex-1 flex-col overflow-hidden">
+        <Header user={session.user} role={role} />
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
+      </div>
     </div>
   );
 }

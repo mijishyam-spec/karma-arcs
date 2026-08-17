@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { formatRole } from "@/lib/permissions";
 import {
   Card,
   CardContent,
@@ -6,36 +7,60 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
-function formatRole(role: string) {
-  return role
-    .toLowerCase()
-    .split("_")
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
+import type { Role } from "@/types";
 
 export default async function DashboardPage() {
   const session = await auth();
-  const user = session?.user;
+  const role = session?.user?.role as Role | undefined;
 
   return (
-    <Card className="max-w-2xl">
-      <CardHeader>
-        <CardTitle>Welcome, {user?.name ?? "User"}</CardTitle>
-        <CardDescription>
-          Signed in as {user?.email ?? "unknown user"}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-          {user?.role ? formatRole(user.role) : "Unknown role"}
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Dashboard modules and role-based navigation will be added in Sprint
-          2. You are authenticated and ready for Phase 0 completion testing.
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+        <p className="text-muted-foreground">
+          Welcome back, {session?.user?.name}
         </p>
-      </CardContent>
-    </Card>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle>Your role</CardTitle>
+            <CardDescription>Current access level</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-semibold">
+              {role ? formatRole(role) : "—"}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Phase 0</CardTitle>
+            <CardDescription>Foundation sprint</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Auth, RBAC, app shell, and placeholder modules are live. Feature
+              modules arrive in Phases 1–7.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Staging</CardTitle>
+            <CardDescription>karma-arcs.vercel.app</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Use the sidebar to explore modules available to your role. Restricted
+              routes redirect to the unauthorized page.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
   );
 }
